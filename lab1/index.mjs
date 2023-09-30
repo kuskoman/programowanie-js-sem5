@@ -22,21 +22,41 @@ const handleInputChange = () => {
   calculateAndDisplay(avg, "avg");
 };
 
+const removeInput = (inputWrapper, inputElement) => {
+  inputBoxElement.removeChild(inputWrapper);
+  const index = inputElementRefs.indexOf(inputElement);
+  if (index > -1) inputElementRefs.splice(index, 1);
+  handleInputChange();
+};
+
 const addNewNumericInput = () => {
+  const inputWrapper = document.createElement("div");
   const newInput = document.createElement("input");
+  const removeButton = document.createElement("button");
+
   newInput.type = "number";
   newInput.value = 0;
+  removeButton.innerText = "Remove";
 
   inputElementRefs.push(newInput);
+  removeButton.addEventListener("click", () =>
+    removeInput(inputWrapper, newInput)
+  );
 
-  inputBoxElement.appendChild(newInput);
+  inputWrapper.appendChild(newInput);
+  inputWrapper.appendChild(removeButton);
+  inputBoxElement.appendChild(inputWrapper);
+
   newInput.addEventListener("change", handleInputChange);
-  handleInputChange();
 };
 
 const initialize = () => {
   const addInputBoxButton = document.getElementById("add-math-input-box");
   addInputBoxButton.addEventListener("click", addNewNumericInput);
+
+  for (let i = 0; i < 3; i++) {
+    addNewNumericInput();
+  }
 };
 
 initialize();
