@@ -1,14 +1,27 @@
 const createSlider = () => {
-  const SLIDES_SELECTOR = ".slide";
-  const SLIDES_CONTAINER_SELECTOR = ".slides";
-  const TOGGLE_PLAY_SELECTOR = ".toggle-play";
-  const NEXT_SELECTOR = ".next";
-  const PREV_SELECTOR = ".prev";
-  const SLIDE_NAV_SELECTOR = ".slide-nav";
-  const PLAY_TEXT = "▶";
-  const PAUSE_TEXT = "❚❚";
+  const SELECTORS = {
+    SLIDES: ".slide",
+    SLIDES_CONTAINER: ".slides",
+    TOGGLE_PLAY: ".toggle-play",
+    NEXT: ".next",
+    PREV: ".prev",
+    SLIDE_NAV: ".slide-nav",
+  };
 
-  const slides = document.querySelectorAll(SLIDES_SELECTOR);
+  const TEXT = {
+    PLAY: "▶",
+    PAUSE: "❚❚",
+  };
+
+  const elements = {
+    slides: document.querySelectorAll(SELECTORS.SLIDES),
+    slidesContainer: document.querySelector(SELECTORS.SLIDES_CONTAINER),
+    togglePlayButton: document.querySelector(SELECTORS.TOGGLE_PLAY),
+    nextButton: document.querySelector(SELECTORS.NEXT),
+    prevButton: document.querySelector(SELECTORS.PREV),
+    slideNavContainer: document.querySelector(SELECTORS.SLIDE_NAV),
+  };
+
   let currentSlide = 0;
   let autoSlideInterval;
   let isPlaying = true;
@@ -16,12 +29,10 @@ const createSlider = () => {
   const updateSlide = (slideIndex) => {
     const offset = -slideIndex * 100;
     requestAnimationFrame(() => {
-      document.querySelector(
-        SLIDES_CONTAINER_SELECTOR
-      ).style.transform = `translateX(${offset}%)`;
+      elements.slidesContainer.style.transform = `translateX(${offset}%)`;
     });
-    document
-      .querySelectorAll(`${SLIDE_NAV_SELECTOR} button`)
+    elements.slideNavContainer
+      .querySelectorAll("button")
       .forEach((btn, index) => {
         btn.classList.toggle("active", index === slideIndex);
       });
@@ -34,15 +45,15 @@ const createSlider = () => {
 
   const startAutoSlide = () => {
     autoSlideInterval = setInterval(() => {
-      currentSlide = (currentSlide + 1) % slides.length;
+      currentSlide = (currentSlide + 1) % elements.slides.length;
       updateSlide(currentSlide);
     }, 2000);
-    document.querySelector(TOGGLE_PLAY_SELECTOR).textContent = PAUSE_TEXT;
+    elements.togglePlayButton.textContent = TEXT.PAUSE;
   };
 
   const stopAutoSlide = () => {
     clearInterval(autoSlideInterval);
-    document.querySelector(TOGGLE_PLAY_SELECTOR).textContent = PLAY_TEXT;
+    elements.togglePlayButton.textContent = TEXT.PLAY;
   };
 
   const togglePlayPause = () => {
@@ -56,27 +67,26 @@ const createSlider = () => {
   };
 
   const nextSlide = () => {
-    currentSlide = (currentSlide + 1) % slides.length;
+    currentSlide = (currentSlide + 1) % elements.slides.length;
     updateSlide(currentSlide);
   };
 
   const prevSlide = () => {
-    currentSlide = currentSlide === 0 ? slides.length - 1 : currentSlide - 1;
+    currentSlide =
+      currentSlide === 0 ? elements.slides.length - 1 : currentSlide - 1;
     updateSlide(currentSlide);
   };
 
   const init = () => {
     startAutoSlide();
-    document
-      .querySelector(TOGGLE_PLAY_SELECTOR)
-      .addEventListener("click", togglePlayPause);
-    document.querySelector(NEXT_SELECTOR).addEventListener("click", nextSlide);
-    document.querySelector(PREV_SELECTOR).addEventListener("click", prevSlide);
+    elements.togglePlayButton.addEventListener("click", togglePlayPause);
+    elements.nextButton.addEventListener("click", nextSlide);
+    elements.prevButton.addEventListener("click", prevSlide);
 
-    slides.forEach((_, index) => {
+    elements.slides.forEach((_, index) => {
       const button = document.createElement("button");
       button.addEventListener("click", () => goToSlide(index));
-      document.querySelector(SLIDE_NAV_SELECTOR).appendChild(button);
+      elements.slideNavContainer.appendChild(button);
     });
   };
 
