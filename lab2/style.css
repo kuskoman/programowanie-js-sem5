@@ -1,0 +1,52 @@
+.slider {
+  position: relative;
+  width: 800px;
+  overflow: hidden;
+  margin: 50px auto;
+  border: 1px solid #ccc;
+}
+
+.slides {
+  display: flex;
+  transition: transform 0.5s;
+}
+
+.slide {
+  flex: 0 0 100%;
+  max-width: 100%;
+}
+
+.controls {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.prev,
+.next,
+.toggle-play {
+  background-color: rgba(255, 255, 255, 0.7);
+  border: none;
+  cursor: pointer;
+  padding: 5px 10px;
+  font-size: 20px;
+}
+
+.slide-nav button {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: white;
+  border: none;
+  cursor: pointer;
+  margin: 0 5px;
+  transition: background-color 0.3s;
+}
+
+.slide-nav button.active {
+  background-color: dodgerblue;
+}
