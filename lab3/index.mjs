@@ -120,6 +120,32 @@ const renderSoundKeys = () => {
   app.appendChild(soundKeysDiv);
 };
 
+let looperInterval = null;
+
+const getLongestDuration = () => {
+  let longestDuration = 0;
+  channels.forEach((channel) => {
+    if (channel.lastStop && channel.startTime) {
+      const duration = channel.lastStop - channel.startTime + channel.pauses;
+      if (duration > longestDuration) {
+        longestDuration = duration;
+      }
+    }
+  });
+  return longestDuration;
+};
+
+const toggleLooper = () => {
+  if (looperInterval) {
+    clearInterval(looperInterval);
+    looperInterval = null;
+  } else {
+    replayAllChannels();
+    looperInterval = setInterval(replayAllChannels, getLongestDuration());
+  }
+  render();
+};
+
 const render = () => {
   app.innerHTML = "";
   renderSoundKeys();
@@ -161,6 +187,15 @@ const render = () => {
 
   app.appendChild(createButton("Replay All", replayAllChannels));
   app.appendChild(createButton("Add Channel", createChannel));
+
+  app.appendChild(createButton("Replay All", replayAllChannels));
+  app.appendChild(createButton("Add Channel", createChannel));
+
+  const looperButton = createButton(
+    looperInterval ? "Stop Looping" : "Start Looping",
+    toggleLooper
+  );
+  app.appendChild(looperButton);
 };
 
 document.addEventListener("keydown", (e) => {
