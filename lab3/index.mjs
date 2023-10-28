@@ -102,6 +102,12 @@ const createSoundButton = (key, sound) => {
   return btn;
 };
 
+const resetChannel = (id) => {
+  const channel = channels.find((channel) => channel.id === id);
+  channel.sounds = [];
+  render();
+};
+
 const renderSoundKeys = () => {
   const soundKeysDiv = document.createElement("div");
   soundKeysDiv.classList.add("sound-keys");
@@ -146,6 +152,9 @@ const render = () => {
     channelDiv.appendChild(recordButton);
     channelDiv.appendChild(createButton("↺", () => replayChannel(channel.id)));
     channelDiv.appendChild(createButton("❌", () => removeChannel(channel.id)));
+    channelDiv.appendChild(
+      createButton("Reset", () => resetChannel(channel.id))
+    );
 
     app.appendChild(channelDiv);
   });
