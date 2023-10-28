@@ -146,6 +146,51 @@ const toggleLooper = () => {
   render();
 };
 
+let metronomeInterval = null;
+
+const playMetronome = (bpm) => {
+  if (metronomeInterval) {
+    clearInterval(metronomeInterval);
+    metronomeInterval = null;
+  }
+
+  const millisecondsInMinute = 60000;
+  const interval = millisecondsInMinute / bpm;
+  metronomeInterval = setInterval(() => {
+    playSound("tink");
+  }, interval);
+};
+
+const stopMetronome = () => {
+  if (metronomeInterval) {
+    clearInterval(metronomeInterval);
+    metronomeInterval = null;
+  }
+};
+
+const handleMetronomeToggle = (input, button) => {
+  if (metronomeInterval) {
+    stopMetronome();
+    button.innerText = "Start Metronome";
+  } else {
+    const bpm = parseInt(input.value, 10);
+    if (bpm && bpm > 0) {
+      playMetronome(bpm);
+      button.innerText = "Stop Metronome";
+    }
+  }
+};
+
+const handleMetronomeInput = (input) => {
+  if (metronomeInterval) {
+    stopMetronome();
+    const bpm = parseInt(input.value, 10);
+    if (bpm && bpm > 0) {
+      playMetronome(bpm);
+    }
+  }
+};
+
 const render = () => {
   app.innerHTML = "";
   renderSoundKeys();
@@ -188,14 +233,30 @@ const render = () => {
   app.appendChild(createButton("Replay All", replayAllChannels));
   app.appendChild(createButton("Add Channel", createChannel));
 
-  app.appendChild(createButton("Replay All", replayAllChannels));
-  app.appendChild(createButton("Add Channel", createChannel));
-
   const looperButton = createButton(
     looperInterval ? "Stop Looping" : "Start Looping",
     toggleLooper
   );
   app.appendChild(looperButton);
+
+  const metronomeDiv = document.createElement("div");
+  metronomeDiv.classList.add("metronome");
+
+  const bpmInput = document.createElement("input");
+  bpmInput.setAttribute("type", "number");
+  bpmInput.setAttribute("placeholder", "BPM");
+  bpmInput.setAttribute("min", "40");
+  bpmInput.setAttribute("max", "220");
+  bpmInput.addEventListener("input", () => handleMetronomeInput(bpmInput));
+  metronomeDiv.appendChild(bpmInput);
+
+  const metronomeButton = createButton(
+    metronomeInterval ? "Stop Metronome" : "Start Metronome",
+    () => handleMetronomeToggle(bpmInput, metronomeButton)
+  );
+  metronomeDiv.appendChild(metronomeButton);
+
+  app.appendChild(metronomeDiv);
 };
 
 document.addEventListener("keydown", (e) => {
