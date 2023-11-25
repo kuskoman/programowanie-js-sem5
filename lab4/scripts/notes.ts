@@ -15,6 +15,7 @@ export interface Note {
   color: NoteColor;
   isPinned: boolean;
   createdAt: Date;
+  tags: string[];
 }
 
 export class NotesManager {
@@ -42,7 +43,12 @@ export class NotesManager {
 
   public getAll(): Note[] {
     const notes = localStorage.getItem(this.storageKey);
-    return notes ? JSON.parse(notes) : [];
+    const parsedNotes = notes ? JSON.parse(notes) : [];
+    const parsedNotesWithCorrectDates = parsedNotes.map((note: Note) => ({
+      ...note,
+      createdAt: new Date(note.createdAt),
+    }));
+    return parsedNotesWithCorrectDates;
   }
 
   public get(noteId: number): Note {

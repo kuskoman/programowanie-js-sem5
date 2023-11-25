@@ -8,6 +8,7 @@
   </head>
   <body>
     <div id="app">
+      <input type="text" id="searchInput" placeholder="Search notes" />
       <form id="noteForm">
         <input type="text" id="title" placeholder="Title" required />
         <textarea id="content" placeholder="Content" required></textarea>
@@ -20,6 +21,7 @@
           <option value="purple">Purple</option>
         </select>
         <label> <input type="checkbox" id="isPinned" /> Pin </label>
+        <input type="text" id="tags" placeholder="Tags (comma-separated)" />
         <button type="submit">Add Note</button>
       </form>
       <div id="notesGrid"></div>
