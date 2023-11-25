@@ -22,6 +22,15 @@
         </select>
         <label> <input type="checkbox" id="isPinned" /> Pin </label>
         <input type="text" id="tags" placeholder="Tags (comma-separated)" />
+        <input
+          type="datetime-local"
+          id="reminderDate"
+          placeholder="Reminder Date"
+        />
+        <textarea
+          id="todoItems"
+          placeholder="To-do items (one per line)"
+        ></textarea>
         <button type="submit">Add Note</button>
       </form>
       <div id="notesGrid"></div>

@@ -1,4 +1,4 @@
-import { NotesManager, Note, NoteColor } from "./notes";
+import { NotesManager, Note, NoteColor, TodoItem } from "./notes";
 
 const notesManager = new NotesManager();
 
@@ -23,6 +23,17 @@ const handleFormSubmit = (event: Event) => {
   const tagsString = (document.getElementById("tags") as HTMLInputElement)
     .value;
   const tags = tagsString.split(",").map((tag) => tag.trim());
+  const reminderDateString = (
+    document.getElementById("reminderDate") as HTMLInputElement
+  ).value;
+  const reminderDate = reminderDateString ? new Date(reminderDateString) : null;
+
+  const todoItemsString = (
+    document.getElementById("todoItems") as HTMLTextAreaElement
+  ).value;
+  const todoItems: TodoItem[] = todoItemsString
+    .split("\n")
+    .map((item) => ({ text: item, isDone: false }));
 
   const note: Note = {
     title,
@@ -31,6 +42,8 @@ const handleFormSubmit = (event: Event) => {
     isPinned,
     createdAt: new Date(),
     tags,
+    reminderDate,
+    todoList: todoItems,
   };
 
   notesManager.add(note);
@@ -68,12 +81,21 @@ const displayNotes = () => {
       .filter((tag) => tag != "")
       .map((tag) => `<span class="tag">#${tag}</span>`)
       .join(" ");
+    const todoItemsHtml = note.todoList
+      .map(
+        (item, itemIndex) =>
+          `<li class="${
+            item.isDone ? "done" : ""
+          }" onclick="toggleTodoItem(${index}, ${itemIndex})">${item.text}</li>`
+      )
+      .join("");
     noteElement.classList.add("note", note.color);
     noteElement.setAttribute("data-id", index.toString());
     noteElement.innerHTML = `
         <h3>${note.title}</h3>
         <p>${note.content}</p>
         <small>Created: ${new Date(note.createdAt).toLocaleDateString()}</small>
+        <ul>${todoItemsHtml}</ul>
         <div class="tags">${tagsHtml}</div>
         <button class="editBtn" data-id="${index}">Edit</button>
         <button class="deleteBtn" data-id="${index}">Delete</button>
@@ -125,6 +147,11 @@ const transformNoteToEditForm = (noteId: number) => {
             }/> Pin
         </label>
         <input type="text" class="editTags" value="${tagsString}" />
+        <input type="date" class="editReminderDate" value="${
+          noteToEdit.reminderDate
+            ? noteToEdit.reminderDate.toISOString().split("T")[0]
+            : ""
+        }" />
         <button class="saveEditBtn" data-id="${noteId}">Save</button>
     `;
 
@@ -154,6 +181,10 @@ const updateNote = (noteId: number) => {
     noteElement.querySelector(".editTags") as HTMLInputElement
   ).value;
   const tags = tagsString.split(",").map((tag) => tag.trim());
+  const reminderDateString = (
+    noteElement.querySelector(".editReminderDate") as HTMLInputElement
+  ).value;
+  const reminderDate = reminderDateString ? new Date(reminderDateString) : null;
 
   const note: Note = {
     title,
@@ -162,8 +193,27 @@ const updateNote = (noteId: number) => {
     isPinned,
     createdAt: savedNote.createdAt,
     tags,
+    reminderDate,
+    todoList: savedNote.todoList,
   };
 
   notesManager.edit(noteId, note);
   displayNotes();
 };
+
+const ONE_MINUTE = 60 * 1000;
+
+const checkReminders = () => {
+  const now = new Date();
+  const notes = notesManager.getAll();
+
+  notes.forEach((note) => {
+    if (note.reminderDate && new Date(note.reminderDate) <= now) {
+      alert(`Reminder for note: ${note.title}`);
+      note.reminderDate = null;
+      notesManager.edit(notes.indexOf(note), note);
+    }
+  });
+};
+
+setInterval(checkReminders, ONE_MINUTE);

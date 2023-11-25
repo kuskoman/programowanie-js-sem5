@@ -9,6 +9,11 @@ export const NoteColor = {
 
 export type NoteColor = (typeof NoteColor)[keyof typeof NoteColor];
 
+export interface TodoItem {
+  text: string;
+  isDone: boolean;
+}
+
 export interface Note {
   title: string;
   content: string;
@@ -16,6 +21,8 @@ export interface Note {
   isPinned: boolean;
   createdAt: Date;
   tags: string[];
+  reminderDate: Date | null;
+  todoList: TodoItem[];
 }
 
 export class NotesManager {
