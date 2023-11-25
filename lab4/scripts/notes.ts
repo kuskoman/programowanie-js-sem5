@@ -15,6 +15,7 @@ export interface TodoItem {
 }
 
 export interface Note {
+  id: number;
   title: string;
   content: string;
   color: NoteColor;
@@ -25,41 +26,63 @@ export interface Note {
   todoList: TodoItem[];
 }
 
-export class NotesManager {
-  constructor(private readonly storageKey: string = "notes") {}
+export type NoteCreateInput = Omit<Note, "id" | "createdAt">;
 
-  public edit(noteId: number, updatedNote: Note): void {
-    const notes = this.getAll();
-    notes[noteId] = updatedNote;
-    localStorage.setItem(this.storageKey, JSON.stringify(notes));
+export class NotesManager {
+  private highestId: number;
+
+  constructor(private readonly storageKey: string = "notes") {
+    this.highestId = this.initializeHighestId();
+  }
+
+  public edit(updatedNote: Note): void {
+    const { id } = updatedNote;
+
+    const notes = this.getAllNotes();
+    if (notes[id]) {
+      notes[id] = updatedNote;
+      localStorage.setItem(this.storageKey, JSON.stringify(notes));
+    }
   }
 
   public delete(noteId: number): void {
-    let notes = this.getAll();
-    notes = notes.filter((_, index) => index !== noteId);
-    localStorage.setItem(this.storageKey, JSON.stringify(notes));
+    const notes = this.getAllNotes();
+    if (notes[noteId]) {
+      delete notes[noteId];
+      localStorage.setItem(this.storageKey, JSON.stringify(notes));
+    }
   }
 
-  public add(note: Note): Note {
-    const notes = this.getAll();
-    notes.push(note);
-    const stringifiedNotes = JSON.stringify(notes);
-    localStorage.setItem(this.storageKey, stringifiedNotes);
-    return note;
+  public add(note: NoteCreateInput): Note {
+    const notes = this.getAllNotes();
+    const newId = ++this.highestId;
+    const newNote: Note = { ...note, id: newId, createdAt: new Date() };
+    notes[newId] = newNote;
+    localStorage.setItem(this.storageKey, JSON.stringify(notes));
+    return newNote;
   }
 
   public getAll(): Note[] {
-    const notes = localStorage.getItem(this.storageKey);
-    const parsedNotes = notes ? JSON.parse(notes) : [];
-    const parsedNotesWithCorrectDates = parsedNotes.map((note: Note) => ({
+    const notes = this.getAllNotes();
+    return Object.values(notes).map((note) => ({
       ...note,
       createdAt: new Date(note.createdAt),
+      reminderDate: note.reminderDate ? new Date(note.reminderDate) : null,
     }));
-    return parsedNotesWithCorrectDates;
   }
 
-  public get(noteId: number): Note {
-    const notes = this.getAll();
+  public get(noteId: number): Note | undefined {
+    const notes = this.getAllNotes();
     return notes[noteId];
+  }
+
+  private initializeHighestId(): number {
+    const notes = this.getAllNotes();
+    return Math.max(0, ...Object.keys(notes).map(Number));
+  }
+
+  private getAllNotes(): Record<number, Note> {
+    const notesString = localStorage.getItem(this.storageKey);
+    return notesString ? JSON.parse(notesString) : {};
   }
 }

@@ -1,4 +1,4 @@
-import { NotesManager, Note, NoteColor, TodoItem } from "./notes";
+import { NotesManager, NoteColor, TodoItem } from "./notes";
 
 const notesManager = new NotesManager();
 
@@ -35,7 +35,7 @@ const handleFormSubmit = (event: Event) => {
     .split("\n")
     .map((item) => ({ text: item, isDone: false }));
 
-  const note: Note = {
+  const note = {
     title,
     content,
     color,
@@ -75,30 +75,32 @@ const displayNotes = () => {
   const notesGrid = document.getElementById("notesGrid")!;
   notesGrid.innerHTML = "";
 
-  notes.forEach((note, index) => {
+  notes.forEach((note) => {
+    const noteId = note.id;
     const noteElement = document.createElement("div");
     const tagsHtml = note.tags
       .filter((tag) => tag != "")
       .map((tag) => `<span class="tag">#${tag}</span>`)
       .join(" ");
     const todoItemsHtml = note.todoList
+      .filter((item) => item)
       .map(
         (item, itemIndex) =>
-          `<li class="${
-            item.isDone ? "done" : ""
-          }" onclick="toggleTodoItem(${index}, ${itemIndex})">${item.text}</li>`
+          `<li><input type="checkbox" class="todo-checkbox" data-noteid="${noteId}" data-itemid="${itemIndex}" ${
+            item.isDone ? "checked" : ""
+          } /> ${item.text}</li>`
       )
-      .join("");
+      .join(" ");
     noteElement.classList.add("note", note.color);
-    noteElement.setAttribute("data-id", index.toString());
+    noteElement.setAttribute("data-id", noteId.toString());
     noteElement.innerHTML = `
         <h3>${note.title}</h3>
         <p>${note.content}</p>
         <small>Created: ${new Date(note.createdAt).toLocaleDateString()}</small>
         <ul>${todoItemsHtml}</ul>
         <div class="tags">${tagsHtml}</div>
-        <button class="editBtn" data-id="${index}">Edit</button>
-        <button class="deleteBtn" data-id="${index}">Delete</button>
+        <button class="editBtn" data-id="${noteId}">Edit</button>
+        <button class="deleteBtn" data-id="${noteId}">Delete</button>
     `;
 
     notesGrid.appendChild(noteElement);
@@ -124,6 +126,21 @@ const attachEventListeners = () => {
       transformNoteToEditForm(noteId);
     });
   });
+
+  document.querySelectorAll(".todo-checkbox").forEach((checkbox) => {
+    checkbox.addEventListener("change", function () {
+      const noteId = parseInt(this.getAttribute("data-noteid")!);
+      const todoItemId = parseInt(this.getAttribute("data-itemid")!);
+      handleTodoItemChange(noteId, todoItemId);
+    });
+  });
+};
+
+const handleTodoItemChange = (noteId: number, todoItemId: number) => {
+  const note = notesManager.get(noteId);
+  const todoItem = note.todoList[todoItemId];
+  todoItem.isDone = !todoItem.isDone;
+  notesManager.edit(note);
 };
 
 const transformNoteToEditForm = (noteId: number) => {
@@ -186,7 +203,8 @@ const updateNote = (noteId: number) => {
   ).value;
   const reminderDate = reminderDateString ? new Date(reminderDateString) : null;
 
-  const note: Note = {
+  const note = {
+    id: noteId,
     title,
     content,
     color,
@@ -197,7 +215,7 @@ const updateNote = (noteId: number) => {
     todoList: savedNote.todoList,
   };
 
-  notesManager.edit(noteId, note);
+  notesManager.edit(note);
   displayNotes();
 };
 
@@ -211,7 +229,7 @@ const checkReminders = () => {
     if (note.reminderDate && new Date(note.reminderDate) <= now) {
       alert(`Reminder for note: ${note.title}`);
       note.reminderDate = null;
-      notesManager.edit(notes.indexOf(note), note);
+      notesManager.edit(note);
     }
   });
 };
