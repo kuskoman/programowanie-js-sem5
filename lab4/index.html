@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lab3</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <form id="noteForm">
+        <input type="text" id="title" placeholder="Title" required />
+        <textarea id="content" placeholder="Content" required></textarea>
+        <select id="color">
+          <option value="red">Red</option>
+          <option value="green">Green</option>
+          <option value="blue">Blue</option>
+          <option value="yellow">Yellow</option>
+          <option value="grey">Grey</option>
+          <option value="purple">Purple</option>
+        </select>
+        <label> <input type="checkbox" id="isPinned" /> Pin </label>
+        <button type="submit">Add Note</button>
+      </form>
+      <div id="notesGrid"></div>
+    </div>
+    <script src="./scripts/index.ts" type="module"></script>
+  </body>
+</html>
