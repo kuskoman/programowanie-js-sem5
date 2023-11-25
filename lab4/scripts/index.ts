@@ -144,7 +144,7 @@ const handleTodoItemChange = (noteId: number, todoItemId: number) => {
 };
 
 const transformNoteToEditForm = (noteId: number) => {
-  const noteToEdit = notesManager.getAll()[noteId];
+  const noteToEdit = notesManager.get(noteId);
   const noteElement = document.querySelector(`.note[data-id="${noteId}"]`)!;
 
   const colorOptions = Object.values(NoteColor)
