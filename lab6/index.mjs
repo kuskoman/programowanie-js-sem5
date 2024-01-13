@@ -4,9 +4,10 @@ const APP_PARAMS = {
   lineColor: "black",
   lineWidth: 2,
   cursorGrabDistance: 250,
-  cursorGravity: -0.025,
+  cursorGravity: -0.2,
   radiusToMassRatio: 0.01,
   speedToMomentumRatio: 0.01,
+  massExchangeRate: 0.1,
 };
 
 const canvas = document.querySelector("canvas");
@@ -37,18 +38,22 @@ const drawBall = (ball) => {
   ctx.fill();
 };
 
-const moveBall = (ball) => {
-  ball.x += ball.dx;
-  ball.y += ball.dy;
+let lastTimestamp = 0;
+
+const moveBall = (ball, deltaTime) => {
+  ball.x += ball.dx * deltaTime;
+  ball.y += ball.dy * deltaTime;
 };
 
-const bounceBall = (ball) => {
+const bounceBall = (ball, deltaTime) => {
   if (ball.x + ball.radius > canvas.width || ball.x - ball.radius < 0) {
     ball.dx *= -1;
   }
   if (ball.y + ball.radius > canvas.height || ball.y - ball.radius < 0) {
     ball.dy *= -1;
   }
+  ball.x += ball.dx * deltaTime;
+  ball.y += ball.dy * deltaTime;
 };
 
 const getDistance = (ball1, ball2) => {
@@ -66,37 +71,29 @@ const drawLine = (ball1, ball2) => {
   ctx.stroke();
 };
 
-const getBallMomentum = (ball) => {
-  return (
-    Math.sqrt(ball.dx ** 2 + ball.dy ** 2) *
-    APP_PARAMS.speedToMomentumRatio *
-    ball.radius *
-    APP_PARAMS.radiusToMassRatio
-  );
-};
-
 const connectBalls = (ball1, ball2) => {
-  const ball1Momentum = getBallMomentum(ball1);
-  const ball2Momentum = getBallMomentum(ball2);
+  const distance = getDistance(ball1, ball2);
+  const overlap = ball1.radius + ball2.radius - distance;
 
-  const strongerBall = ball1Momentum > ball2Momentum ? ball1 : ball2;
-  const weakerBall = ball1Momentum > ball2Momentum ? ball2 : ball1;
+  if (overlap > 0) {
+    const massChange =
+      Math.min(ball1.radius, ball2.radius) * APP_PARAMS.massExchangeRate;
+    ball1.radius += massChange;
+    ball2.radius -= massChange;
 
-  const massChange =
-    Math.abs(ball1Momentum - ball2Momentum) * weakerBall.radius;
+    const tempDx = ball1.dx;
+    const tempDy = ball1.dy;
+    ball1.dx = ball2.dx;
+    ball1.dy = ball2.dy;
+    ball2.dx = tempDx;
+    ball2.dy = tempDy;
 
-  if (weakerBall.radius - massChange > 1) {
-    weakerBall.radius -= massChange;
-  } else {
-    balls.splice(balls.indexOf(weakerBall), 1);
+    const angle = Math.atan2(ball2.y - ball1.y, ball2.x - ball1.x);
+    ball1.x -= overlap * Math.cos(angle);
+    ball1.y -= overlap * Math.sin(angle);
+    ball2.x += overlap * Math.cos(angle);
+    ball2.y += overlap * Math.sin(angle);
   }
-
-  strongerBall.radius += massChange;
-
-  strongerBall.dx *= 0.99;
-  strongerBall.dy *= 0.99;
-  weakerBall.dx *= 1.01;
-  weakerBall.dy *= 1.01;
 };
 
 const handleMouseMove = (e) => {
@@ -107,8 +104,9 @@ const handleMouseMove = (e) => {
 
   balls.forEach((ball) => {
     if (getDistance(mouse, ball) < APP_PARAMS.cursorGrabDistance) {
-      ball.x += (mouse.x - ball.x) * APP_PARAMS.cursorGravity;
-      ball.y += (mouse.y - ball.y) * APP_PARAMS.cursorGravity;
+      const angle = Math.atan2(mouse.y - ball.y, mouse.x - ball.x);
+      ball.dx += Math.cos(angle) * APP_PARAMS.cursorGravity;
+      ball.dy += Math.sin(angle) * APP_PARAMS.cursorGravity;
     }
   });
 };
@@ -129,12 +127,16 @@ const handleMouseClick = (e) => {
 };
 
 const animate = () => {
+  const time = new Date().getTime();
+  const deltaTime = (time - lastTimestamp) / 200;
+  lastTimestamp = time;
+
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   balls.forEach((ball) => {
     drawBall(ball);
-    moveBall(ball);
-    bounceBall(ball);
+    moveBall(ball, deltaTime);
+    bounceBall(ball, deltaTime);
 
     balls.forEach((otherBall) => {
       if (ball !== otherBall) {
