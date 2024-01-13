@@ -1,4 +1,5 @@
 const APP_PARAMS = {
+  speed: 15,
   minBalls: 10,
   maxBalls: 25,
   lineColor: "black",
@@ -128,7 +129,7 @@ const handleMouseClick = (e) => {
 
 const animate = () => {
   const time = new Date().getTime();
-  const deltaTime = (time - lastTimestamp) / 200;
+  const deltaTime = (time - lastTimestamp) / (1000 / APP_PARAMS.speed);
   lastTimestamp = time;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
