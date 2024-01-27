@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+
+  <body>
+    <input type="text" id="api-key" placeholder="API Key" />
+    <input
+      list="cities"
+      name="city"
+      id="city"
+      oninput="handleCityAutocomplete()"
+    />
+    <datalist id="cities"></datalist>
+    <button id="get-weather" onclick="handleGetWeather()">Get Weather</button>
+    <div id="app"></div>
+    <script src="index.ts"></script>
+  </body>
+</html>
